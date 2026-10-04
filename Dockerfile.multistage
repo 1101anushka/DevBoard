@@ -1,0 +1,33 @@
+#------------------------STAGE:1---------------------#
+
+#Builder Stage: Used to build the package and app
+FROM node:24 AS builder
+
+#This will create a folder app and make it a pwd
+WORKDIR /app
+
+#This will copy all the code
+COPY . .
+
+#This will install all the packages
+RUN npm install
+
+#This will create a folder /dist
+RUN npm run build
+
+#------------------------STAGE:2----------------------#
+
+#Runner Stage: Used to run the application from builder stage
+FROM node:24-alpine AS runner
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install -g vite
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 4173
+
+CMD ["npm", "run", "preview", "--", "--host"]
