@@ -44,3 +44,43 @@ jobs:
           context: ./frontend
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:latest 
+
+
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.23' 
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Run go Formatter
+        run: go fmt
+        working-directory: backend
+
+      - name: Run go Vet linting
+        run: go vet
+        working-directory: backend
+
+      - name: Run Tests
+        run: go test
+        working-directory: backend
+
+      - name:  Docker Setup [login]
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:latest
