@@ -1,0 +1,31 @@
+name: matrix
+
+on:
+    workflow_dispatch:
+
+jobs:
+    code-format:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                go: ['1.22','1.23', '1.24']
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v7
+
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                go-version: ${{ matrix.go }} 
+                go-version-file: 'go.mod'
+                cache-dependency-path: 'go.sum'
+
+            - name: Run go Formatter
+              run: go fmt
+              working-directory: backend
+
+            - name: Run go Vet linting
+              run: go vet
+              working-directory: backend
